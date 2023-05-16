@@ -59,5 +59,8 @@
     "@blake.regalia/belt": "^0.5.2",
     "@solar-republic/neutrino": "^0.0.1",
     "uri-js": "^4.4.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
