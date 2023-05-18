@@ -63,8 +63,8 @@
     "uglify-js": "^3.17.4"
   },
   "dependencies": {
-    "@blake.regalia/belt": "^0.6.2",
-    "@solar-republic/neutrino": "^0.1.4",
+    "@blake.regalia/belt": "^0.6.3",
+    "@solar-republic/neutrino": "^0.2.0",
     "uri-js": "^4.4.1"
   },
   "publishConfig": {
