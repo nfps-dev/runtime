@@ -1,9 +1,11 @@
 
 import type {A, L, S} from 'ts-toolbelt';
 
-import type {CompulsorySvgNodeCreator, DocumentNamespace, DocumentNamespaceMap, SvgNodeCreator} from './web';
+import type {DocumentNamespace, HtmlNodeCreator, SvgNodeCreator} from './web';
 
-import {P_NS_SVG} from './constants';
+import type {Dict} from '@blake.regalia/belt';
+
+import {P_NS_HTML, P_NS_SVG} from './constants';
 
 
 type TrimLeft<s_text extends string> = s_text extends ` ${infer s_trimmed}`? TrimLeft<s_trimmed>: s_text;
@@ -106,27 +108,35 @@ export const qsa = <
 >[] => Array.from(dm_node?.querySelectorAll(sq_selector) || []);
 
 
+// export const create_element_ns = <
+// 	p_ns extends DocumentNamespace=typeof P_NS_SVG,
+// 	h_set extends DocumentNamespaceMap[p_ns]=A.Cast<SVGElementTagNameMap, DocumentNamespaceMap[p_ns]>,
+// 	si_tag extends Extract<keyof h_set, string>=Extract<keyof h_set, string>,
+// >(si_tag: si_tag, p_ns?: p_ns): h_set[si_tag] => document.createElementNS(p_ns || P_NS_SVG, si_tag) as h_set[si_tag];
 
-export const create_element_ns = <
-	p_ns extends DocumentNamespace=typeof P_NS_SVG,
-	h_set extends DocumentNamespaceMap[p_ns]=A.Cast<SVGElementTagNameMap, DocumentNamespaceMap[p_ns]>,
-	si_tag extends Extract<keyof h_set, string>=Extract<keyof h_set, string>,
->(si_tag: si_tag, p_ns?: p_ns): h_set[si_tag] => document.createElementNS(p_ns || P_NS_SVG, si_tag) as h_set[si_tag];
-
-export const create: CompulsorySvgNodeCreator = (si_tag, h_attrs, a_children=[], p_ns: DocumentNamespace=P_NS_SVG) => {
-	// create element
-	const dm_elmt = create_element_ns(si_tag, p_ns);
+const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_children?: (string | Node)[]) => {
+	// const dm_elmt = create_element_ns(si_tag, p_ns);
+	const dm_elmt = document.createElementNS(p_ns || P_NS_SVG, si_tag);
 
 	// set attributes
-	for(const si_attr in h_attrs) {
-		dm_elmt.setAttribute(si_attr, h_attrs[si_attr]!);
+	for(const si_attr in h_attrs || {}) {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		dm_elmt.setAttribute(si_attr, h_attrs![si_attr] as string);
 	}
 
 	// add children
-	dm_elmt.append(...a_children);
+	dm_elmt.append(...a_children || []);
 
 	// return element
 	return dm_elmt;
 };
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const create: {
+	svg: SvgNodeCreator;
+	html: HtmlNodeCreator;
+} = {
+	svg: creator(P_NS_SVG) as SvgNodeCreator,
+	html: creator(P_NS_HTML) as HtmlNodeCreator,
+};
 
