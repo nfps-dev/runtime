@@ -107,14 +107,13 @@ export const qsa = <
 		: sq_selector
 >[] => Array.from(dm_node?.querySelectorAll(sq_selector) || []);
 
-
 // export const create_element_ns = <
 // 	p_ns extends DocumentNamespace=typeof P_NS_SVG,
 // 	h_set extends DocumentNamespaceMap[p_ns]=A.Cast<SVGElementTagNameMap, DocumentNamespaceMap[p_ns]>,
 // 	si_tag extends Extract<keyof h_set, string>=Extract<keyof h_set, string>,
 // >(si_tag: si_tag, p_ns?: p_ns): h_set[si_tag] => document.createElementNS(p_ns || P_NS_SVG, si_tag) as h_set[si_tag];
 
-const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_children?: (string | Node)[]) => {
+const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_children?: (Node| string)[]) => {
 	// const dm_elmt = create_element_ns(si_tag, p_ns);
 	const dm_elmt = document.createElementNS(p_ns, si_tag);
 
@@ -131,12 +130,7 @@ const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_
 	return dm_elmt;
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const create: {
-	svg: SvgNodeCreator;
-	html: HtmlNodeCreator;
-} = {
-	svg: creator(P_NS_SVG) as SvgNodeCreator,
-	html: creator(P_NS_HTML) as HtmlNodeCreator,
-};
+
+export const create_svg = creator(P_NS_SVG) as SvgNodeCreator;
+export const create_html = creator(P_NS_HTML) as HtmlNodeCreator;
 
