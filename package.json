@@ -1,6 +1,6 @@
 {
   "name": "@nfps.dev/runtime",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Runtime library for NFPs",
   "keywords": [
     "nfp",
@@ -18,18 +18,18 @@
     "email": "blake.regalia@gmail.com",
     "url": "https://blake-regalia.com/"
   },
-	"type": "commonjs",
-	"main": "dist/cjs/main.js",
-	"module": "dist/mjs/main.js",
-	"types": "dist/mjs/main.d.ts",
-	"exports": {
-		"require": "./dist/cjs/main.js",
-		"import": "./dist/mjs/main.js"
-	},
-	"files": [
-		"dist/cjs",
-		"dist/mjs"
-	],
+  "type": "commonjs",
+  "main": "dist/cjs/main.js",
+  "module": "dist/mjs/main.js",
+  "types": "dist/mjs/main.d.ts",
+  "exports": {
+    "require": "./dist/cjs/main.js",
+    "import": "./dist/mjs/main.js"
+  },
+  "files": [
+    "dist/cjs",
+    "dist/mjs"
+  ],
   "scripts": {
     "lint": "eslint --ext .ts .",
     "build:mjs": "tsc -p tsconfig.json",
