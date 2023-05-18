@@ -5,9 +5,8 @@ import {defineConfig} from 'rollup';
 export default defineConfig({
 	input: 'src/main.ts',
 	output: {
-		dir: 'dist',
+		dir: 'dist/min',
 		format: 'esm',
-		entryFileNames: `[name]${'development' !== process.env['NODE_ENV']? '.min': ''}.mjs`,
 		sourcemap: false,
 	},
 	external: [
@@ -15,6 +14,11 @@ export default defineConfig({
 		'@solar-republic/neutrino',
 	],
 	plugins: [
-		microWeb(),
+		microWeb({
+			compilerOptions: {
+				outDir: 'dist/min',
+				declarationDir: 'dist/min',
+			},
+		}),
 	],
 });

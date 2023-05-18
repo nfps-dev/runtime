@@ -1,19 +1,18 @@
 {
-	"extends": "@blake.regalia/tsconfig/tsconfig.web.json",
+	"extends": "@blake.regalia/tsconfig/tsconfig.node.json",
 
 	"compilerOptions": {
 		"baseUrl": ".",
-		"outDir": "dist",
+		"outDir": "dist/mjs",
 
 		"declaration": true,
-		"declarationDir": "dist"
+		"declarationDir": "dist/mjs",
+
+		"noUncheckedIndexedAccess": true,
+		"noPropertyAccessFromIndexSignature": false
 	},
 
 	"include": [
-		"src/**/*.d.ts",
 		"src/**/*.ts",
-		"test/**/*.ts",
-		"rollup.config.ts",
-		".eslintrc.cjs"
 	]
 }
