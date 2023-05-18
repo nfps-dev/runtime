@@ -116,7 +116,7 @@ export const qsa = <
 
 const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_children?: (string | Node)[]) => {
 	// const dm_elmt = create_element_ns(si_tag, p_ns);
-	const dm_elmt = document.createElementNS(p_ns || P_NS_SVG, si_tag);
+	const dm_elmt = document.createElementNS(p_ns, si_tag);
 
 	// set attributes
 	for(const si_attr in h_attrs || {}) {
