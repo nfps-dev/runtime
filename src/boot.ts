@@ -10,6 +10,7 @@ import {
 	base64_to_buffer,
 	buffer_to_text,
 	concat,
+	ofe,
 } from '@blake.regalia/belt';
 
 import {
@@ -31,7 +32,9 @@ export type SlimTokenLocation = [
 export type BootInfo = [
 	a_location: SlimTokenLocation,
 	p_lcd: HttpsUrl,
-	z_auth: AuthSecret,
+	g_permit: QueryPermit,
+	s_vk: string,
+	k_contract: SecretContract,
 ];
 
 let k_contract: SecretContract;
@@ -137,7 +140,7 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 		.map(dm => [dm, nfp_attr(dm, 'src')?.split('?')]) as [Element, [string, string?]][];
 
 	for(const [dm_element, [si_package, sx_params]] of a_srcs) {
-		const dm_script = await inject_script(si_package, Object.fromEntries(new URLSearchParams(sx_params || '').entries()));
+		const dm_script = await inject_script(si_package, ofe(new URLSearchParams(sx_params || '').entries()));
 
 		// replace script
 		if(dm_script) {
@@ -219,7 +222,9 @@ export const boot = async(): Promise<void | BootInfo> => {
 					return [
 						a_location,
 						k_contract.lcd,
-						g_permit || sh_vk,
+						g_permit,
+						sh_vk,
+						k_contract,
 					];
 				}
 			}
