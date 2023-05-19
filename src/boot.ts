@@ -1,11 +1,9 @@
-import type {JsonObject} from '@blake.regalia/belt';
-
+import type {PackageVersionInfo} from './nfp-types';
 import type {
-	Base64,
+	AuthSecret,
 	QueryPermit,
 	HttpsUrl,
 	SecretBech32,
-	SecretContract,
 } from '@solar-republic/neutrino';
 
 import {
@@ -15,34 +13,29 @@ import {
 } from '@blake.regalia/belt';
 
 import {
-	queryContract,
-	secretContract,
+	SecretContract,
+	query_contract_infer,
 } from '@solar-republic/neutrino';
+
+
 
 import {P_NS_NFP, P_NS_SVG, S_CONTENT_TYPE_SCRIPT} from './constants';
 
 
-type ConciseTokenLocation = [
+export type SlimTokenLocation = [
 	si_chain: string,
 	sa_contract: SecretBech32,
 	si_token: string,
 ];
 
-interface PackageVersionInfo {
-	package?: {
-		data: {
-			bytes: Base64;
-			content_type?: string;
-			content_encoding?: string;
-			metadata?: string;
-		};
-		tags?: string[];
-		metadata?: string;
-	};
-}
+export type BootInfo = [
+	a_location: SlimTokenLocation,
+	p_lcd: HttpsUrl,
+	z_auth: AuthSecret,
+];
 
 let k_contract: SecretContract;
-let a_location: ConciseTokenLocation;
+let a_location: SlimTokenLocation;
 let si_storage_permit: string;
 let si_storage_vk: string;
 let g_permit: QueryPermit;
@@ -78,107 +71,89 @@ const import_query_key_prompt = (): QueryPermit | string | void => {
 };
 
 
-const hydrate_nfp = async() => {
+export const inject_script = async(si_package: string, h_query: {
+	[si_key: string]: string;
+	tag?: string;
+}): Promise<SVGScriptElement | void> => {
+	// submit query
+	const [g_version, xc_code, s_error, h_response] = await query_contract_infer<PackageVersionInfo>(k_contract, 'package_version', {
+		package_id: si_package,
+		token_id: a_location[2],
+		...h_query,
+	}, g_permit || sh_vk);
+
+	// query error
+	if(!g_version) return alert(s_error || JSON.stringify(h_response));
+
+	// package is present
+	const g_package = g_version.package;
+	if(g_package?.data.bytes) {
+		// permit or vk worked, save it to local storage
+		localStorage.setItem(...(g_permit
+			? [si_storage_permit, JSON.stringify(g_permit)]
+			: [si_storage_vk, sh_vk]) as [string, string]);
+
+		// create script
+		const dm_script = document.createElementNS(P_NS_SVG, 'script');
+		dm_script.setAttribute('type', S_CONTENT_TYPE_SCRIPT);
+
+		// eslint-disable-next-line prefer-const
+		let g_data = g_package.data;
+
+		let atu8_bytes = base64_to_buffer(g_data.bytes);
+
+		// eslint-disable-next-line prefer-const
+		let s_encoding = g_data.content_encoding!;
+		if(s_encoding) {
+			const d_reader = new Blob([atu8_bytes]).stream()
+				.pipeThrough<Uint8Array>(new DecompressionStream(s_encoding))
+				.getReader();
+
+			const a_chunks: Uint8Array[] = [];
+			for(;;) {
+				const {
+					done: b_done,
+					value: atu8_chunk,
+				} = await d_reader.read();
+
+				if(b_done) break;
+
+				a_chunks.push(atu8_chunk);
+			}
+
+			atu8_bytes = concat(a_chunks);
+		}
+
+		dm_script.textContent = buffer_to_text(atu8_bytes);
+
+		// return script
+		return dm_script;
+	}
+};
+
+const hydrate_nfp = async(): Promise<void | 1> => {
 	// find scripts
 	const a_srcs = Array.from(nfp_tags('script'))
 		.map(dm => [dm, nfp_attr(dm, 'src')?.split('?')]) as [Element, [string, string?]][];
 
 	for(const [dm_element, [si_package, sx_params]] of a_srcs) {
-		// prep package version query
-		const g_package_version = {
-			package_id: si_package,
-			token_id: a_location[2],
-			...Object.fromEntries(new URLSearchParams(sx_params || '').entries()),
-		};
+		const dm_script = await inject_script(si_package, Object.fromEntries(new URLSearchParams(sx_params || '').entries()));
 
-		// adjust for query method
-		const g_query = (g_permit
-			? {
-				with_permit: {
-					package_version: g_package_version,
-					permit: g_permit,
-				},
-			}
-			: {
-				package_version: {
-					...g_package_version,
-					viewing_key: sh_vk,
-				},
-			}) as JsonObject;
-
-		// submit query
-		const [xc_code, s_error, h_response] = await queryContract<{
-			package_version?: PackageVersionInfo;
-			with_permit?: {
-				package_version: PackageVersionInfo;
-			};
-		}>(k_contract, g_query);
-
-		// query error
-		if(xc_code) return alert(s_error);
-
-		// destructure response
-		let {
-			// eslint-disable-next-line prefer-const
-			with_permit: g_with,
-			package_version: g_version,
-		} = h_response!;  // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-
-		// permit response
-		if(g_with) g_version = g_with.package_version;
-
-		// invalid response
-		if(!g_version) return alert('Failed to query contract using provided auth token');
-
-		// package is present
-		const g_package = g_version?.package;
-		if(g_package?.data.bytes) {
-			// permit or vk worked, save it to local storage
-			localStorage.setItem(...(g_permit
-				? [si_storage_permit, JSON.stringify(g_permit)]
-				: [si_storage_vk, sh_vk]) as [string, string]);
-
-			// create script
-			const dm_script = document.createElementNS(P_NS_SVG, 'script');
-			dm_script.setAttribute('type', S_CONTENT_TYPE_SCRIPT);
-
-			// eslint-disable-next-line prefer-const
-			let g_data = g_package.data;
-
-			let atu8_bytes = base64_to_buffer(g_data.bytes);
-
-			// eslint-disable-next-line prefer-const
-			let s_encoding = g_data.content_encoding!;
-			if(s_encoding) {
-				const d_reader = new Blob([atu8_bytes]).stream()
-					.pipeThrough<Uint8Array>(new DecompressionStream(s_encoding))
-					.getReader();
-
-				const a_chunks: Uint8Array[] = [];
-				for(;;) {
-					const {
-						done: b_done,
-						value: atu8_chunk,
-					} = await d_reader.read();
-
-					if(b_done) break;
-
-					a_chunks.push(atu8_chunk);
-				}
-
-				atu8_bytes = concat(a_chunks);
-			}
-
-			dm_script.textContent = buffer_to_text(atu8_bytes);
-
-			// inject script
+		// replace script
+		if(dm_script) {
 			dm_element.replaceWith(dm_script);
 		}
+		// fail
+		else {
+			return;
+		}
 	}
+
+	return 1;
 };
 
 
-const resolve_permit = () => {
+const resolve_permit = async(): Promise<void | 1> => {
 	// id of storage items
 	const s_location = a_location.join(':');
 	si_storage_permit = 'permit:'+s_location;
@@ -197,10 +172,12 @@ const resolve_permit = () => {
 	if(!g_permit && !sh_vk) import_query_key_prompt()!;
 
 	// something was loaded, hydrate; query succeeded
-	if(g_permit || sh_vk) void hydrate_nfp();
+	if(g_permit || sh_vk) {
+		return await hydrate_nfp();
+	}
 };
 
-export const boot = async(): Promise<void> => {
+export const boot = async(): Promise<void | BootInfo> => {
 	// do not boot while loading
 	if(xc_busy) return;
 
@@ -222,7 +199,7 @@ export const boot = async(): Promise<void> => {
 
 		// destructure nfp:self attribute values
 		a_location = ['chain', 'contract', 'token']
-			.map(si_attr => nfp_attr(dm_self, si_attr)) as ConciseTokenLocation;
+			.map(si_attr => nfp_attr(dm_self, si_attr)) as SlimTokenLocation;
 
 		// set busy state
 		xc_busy = 1;
@@ -231,13 +208,20 @@ export const boot = async(): Promise<void> => {
 		for(const p_lcd of a_lcds) {
 			try {
 				// attempt to instantiate contract
-				k_contract = await secretContract(p_lcd, a_location[1]);
+				k_contract = await SecretContract(p_lcd, a_location[1]);
 
 				// free
 				xc_busy = 0;
 
 				// done
-				return resolve_permit();
+				if(await resolve_permit()) {
+					// return boot info
+					return [
+						a_location,
+						k_contract.lcd,
+						g_permit || sh_vk,
+					];
+				}
 			}
 			catch(e_query) {
 				// free
