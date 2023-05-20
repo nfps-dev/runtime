@@ -12,7 +12,7 @@ import {
 	SecretContract,
 } from '@solar-republic/neutrino';
 
-import {inject_script} from './connectivity';
+import {load_script} from './connectivity';
 import {P_NS_NFP} from './constants';
 
 
@@ -74,7 +74,7 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 		.map(dm => [dm, nfp_attr(dm, 'src')?.split('?')]) as [Element, [string, string?]][];
 
 	for(const [dm_element, [si_package, sx_params]] of a_srcs) {
-		const dm_script = await inject_script(
+		const dm_script = await load_script(
 			si_package,
 			ofe(new URLSearchParams(sx_params || '').entries()),
 			k_contract,

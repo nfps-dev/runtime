@@ -17,7 +17,7 @@ import {
 
 import {P_NS_SVG, S_CONTENT_TYPE_SCRIPT} from './constants';
 
-export const inject_script = async(
+export const load_script = async(
 	si_package: string,
 	h_query: {
 		[si_key: string]: string;
