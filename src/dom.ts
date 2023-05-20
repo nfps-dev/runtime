@@ -140,8 +140,16 @@ export const create_html = creator(P_NS_HTML) as HtmlNodeCreator;
 
 export const ls_get_str = (si_key: string): string | null => localStorage.getItem(si_key);
 
-export const ls_set_str = (si_key: string, s_value: string): void => localStorage.setItem(si_key, s_value);
+export const ls_set_str = <
+	s_value extends string,
+>(si_key: string, s_value: s_value): s_value => (
+	localStorage.setItem(si_key, s_value),  // eslint-disable-line no-sequences
+	s_value);
 
 export const ls_get_json = <w_out extends JsonValue>(si_key: string): w_out | undefined => safe_json(ls_get_str(si_key) || '');
 
-export const ls_set_json = (si_key: string, w_value: JsonValue): void => ls_set_str(si_key, JSON.stringify(w_value));
+export const ls_set_json = <
+	w_value extends JsonValue,
+>(si_key: string, w_value: w_value): w_value => (
+	ls_set_str(si_key, JSON.stringify(w_value)),  // eslint-disable-line no-sequences
+	w_value);
