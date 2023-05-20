@@ -14,9 +14,21 @@ export interface PackageVersionInfo {
 	};
 }
 
+export interface StorageData {
+	data: KeyValue[];
+}
+
+export interface KeyValue {
+	key: string;
+	value: string;
+}
+
 export interface NfpQueryRegistry {
 	package_version: {
 		response: PackageVersionInfo;
+	};
+	storage_owner_get: {
+		response: StorageData;
 	};
 }
 
