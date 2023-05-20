@@ -1,6 +1,6 @@
 {
   "name": "@nfps.dev/runtime",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Runtime library for NFPs",
   "keywords": [
     "nfp",
