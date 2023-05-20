@@ -3,7 +3,9 @@ import type {A, L, S} from 'ts-toolbelt';
 
 import type {DocumentNamespace, HtmlNodeCreator, SvgNodeCreator} from './web';
 
-import type {Dict} from '@blake.regalia/belt';
+import type {Dict, JsonValue} from '@blake.regalia/belt';
+
+import {safe_json} from '@solar-republic/neutrino';
 
 import {P_NS_HTML, P_NS_SVG} from './constants';
 
@@ -120,7 +122,7 @@ const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_
 	// set attributes
 	for(const si_attr in h_attrs || {}) {
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-		dm_elmt.setAttribute(si_attr, h_attrs![si_attr] as string);
+		dm_elmt.setAttribute(si_attr, h_attrs![si_attr]!);
 	}
 
 	// add children
@@ -134,3 +136,12 @@ const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_
 export const create_svg = creator(P_NS_SVG) as SvgNodeCreator;
 export const create_html = creator(P_NS_HTML) as HtmlNodeCreator;
 
+
+
+export const ls_get_str = (si_key: string): string | null => localStorage.getItem(si_key);
+
+export const ls_set_str = (si_key: string, s_value: string): void => localStorage.setItem(si_key, s_value);
+
+export const ls_get_json = <w_out extends JsonValue>(si_key: string): w_out | undefined => safe_json(ls_get_str(si_key) || '');
+
+export const ls_set_json = (si_key: string, w_value: JsonValue): void => ls_set_str(si_key, JSON.stringify(w_value));
