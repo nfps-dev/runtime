@@ -69,26 +69,32 @@ type SvgElementProperties<d_element extends Element> = {
 	[si_key in string]?: string;
 };
 
-export type SvgNodeCreator = (
-	si_tag: keyof SVGElementTagNameMap,
-	h_attrs?: A.Compute<SvgElementProperties<SVGElementTagNameMap[typeof si_tag]>>,
+export type SvgNodeCreator = <
+	si_tag extends keyof SVGElementTagNameMap,
+>(
+	si_tag: si_tag,
+	h_attrs?: A.Compute<SvgElementProperties<SVGElementTagNameMap[si_tag]>>,
 	a_children?: (Node | string)[]
-) => SVGElement;
+) => SVGElementTagNameMap[si_tag];
 
 
-export type CompulsorySvgNodeCreator = (
+export type CompulsorySvgNodeCreator = <
+	si_tag extends keyof SVGElementTagNameMap,
+>(
 	si_tag: keyof SVGElementTagNameMap,
-	h_attrs: A.Compute<SvgElementProperties<SVGElementTagNameMap[typeof si_tag]>>,
+	h_attrs: A.Compute<SvgElementProperties<SVGElementTagNameMap[si_tag]>>,
 	a_children?: (Node | string)[]
-) => SVGElement;
+) => SVGElementTagNameMap[si_tag];
 
 
 type HtmlElementProperties<d_element extends Element, w_extra=never> = {
 	[si_key in OmitCapsU<O.SelectKeys<d_element, string>>]: string;
 };
 
-export type HtmlNodeCreator = (
-	si_tag: keyof HTMLElementTagNameMap,
-	h_attrs?: HtmlElementProperties<HTMLElementTagNameMap[typeof si_tag]>,
+export type HtmlNodeCreator = <
+	si_tag extends keyof HTMLElementTagNameMap,
+>(
+	si_tag: si_tag,
+	h_attrs?: HtmlElementProperties<HTMLElementTagNameMap[si_tag]>,
 	a_children?: (Node | string)[]
-) => HTMLElement;
+) => HTMLElementTagNameMap[si_tag];
