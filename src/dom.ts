@@ -133,10 +133,10 @@ const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_
 };
 
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export const create_svg = creator(P_NS_SVG) as SvgNodeCreator;
 export const create_html = creator(P_NS_HTML) as HtmlNodeCreator;
-
-
+/* eslint-enable */
 
 export const ls_read = (si_key: string): string | null => localStorage.getItem(si_key);
 
@@ -162,3 +162,4 @@ export const ls_read_b64 = (si_key: string): Uint8Array | null => {
 export const ls_write_b64 = (si_key: string, atu8_data: Uint8Array): Uint8Array => (
 	ls_write(si_key, buffer_to_base64(atu8_data)),  // eslint-disable-line no-sequences
 	atu8_data);
+
