@@ -142,17 +142,17 @@ export const ls_read = (si_key: string): string | null => localStorage.getItem(s
 
 export const ls_write = <
 	s_value extends string,
->(si_key: string, s_value: s_value): s_value => (
+>(si_key: string, s_value: string): s_value => (
 	localStorage.setItem(si_key, s_value),  // eslint-disable-line no-sequences
-	s_value);
+	s_value) as s_value;
 
 export const ls_read_json = <w_out extends JsonValue>(si_key: string): w_out | undefined => safe_json(ls_read(si_key) || '');
 
 export const ls_write_json = <
 	w_value extends JsonValue,
->(si_key: string, w_value: w_value): w_value => (
+>(si_key: string, w_value: JsonValue): w_value => (
 	ls_write(si_key, JSON.stringify(w_value)),  // eslint-disable-line no-sequences
-	w_value);
+	w_value) as w_value;
 
 export const ls_read_b64 = (si_key: string): Uint8Array | null => {
 	const s_value = ls_read(si_key);
