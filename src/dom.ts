@@ -7,6 +7,8 @@ import {base64_to_buffer, buffer_to_base64, type Dict, type JsonValue} from '@bl
 
 import {safe_json} from '@solar-republic/neutrino';
 
+import {get, set} from 'idb-keyval';
+
 import {P_NS_HTML, P_NS_SVG} from './constants';
 
 
@@ -138,12 +140,13 @@ export const create_svg = creator(P_NS_SVG) as SvgNodeCreator;
 export const create_html = creator(P_NS_HTML) as HtmlNodeCreator;
 /* eslint-enable */
 
+/* eslint-disable no-sequences */
 export const ls_read = (si_key: string): string | null => localStorage.getItem(si_key);
 
 export const ls_write = <
 	s_value extends string,
 >(si_key: string, s_value: string): s_value => (
-	localStorage.setItem(si_key, s_value),  // eslint-disable-line no-sequences
+	localStorage.setItem(si_key, s_value),
 	s_value) as s_value;
 
 export const ls_read_json = <w_out extends JsonValue>(si_key: string): w_out | undefined => safe_json(ls_read(si_key) || '');
@@ -151,7 +154,7 @@ export const ls_read_json = <w_out extends JsonValue>(si_key: string): w_out | u
 export const ls_write_json = <
 	w_value extends JsonValue,
 >(si_key: string, w_value: JsonValue): w_value => (
-	ls_write(si_key, JSON.stringify(w_value)),  // eslint-disable-line no-sequences
+	ls_write(si_key, JSON.stringify(w_value)),
 	w_value) as w_value;
 
 export const ls_read_b64 = (si_key: string): Uint8Array | null => {
@@ -160,6 +163,34 @@ export const ls_read_b64 = (si_key: string): Uint8Array | null => {
 };
 
 export const ls_write_b64 = (si_key: string, atu8_data: Uint8Array): Uint8Array => (
-	ls_write(si_key, buffer_to_base64(atu8_data)),  // eslint-disable-line no-sequences
+	ls_write(si_key, buffer_to_base64(atu8_data)),
 	atu8_data);
 
+
+export type StructuredCloneable =
+	| null
+	| string
+	| number
+	| boolean
+	| Date
+	| RegExp
+	| Blob
+	| FileList
+	| ImageData
+	| StructuredCloneable[]
+	| {[key: string]: StructuredCloneable}
+	| Map<StructuredCloneable, StructuredCloneable>
+	| Set<StructuredCloneable>
+	| ArrayBuffer;
+
+export const idb_read = get as (w_key: IDBValidKey) => Promise<StructuredCloneable>;
+
+type IdbWriter = <
+	w_value extends StructuredCloneable,
+>(si_key: IDBValidKey, w_value: w_value) => Promise<w_value>;
+
+export const idb_write: IdbWriter = async(w_key, w_value) => (
+	await set(w_key, w_value),
+	w_value);
+
+/* eslint-enable */

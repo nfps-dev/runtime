@@ -42,7 +42,6 @@
     "@blake.regalia/eslint-config-elite": "^0.2.8",
     "@blake.regalia/tsconfig": "^0.1.2",
     "@nfps.dev/rollup-plugin-microweb": "^0.3.5",
-    "@nfps.dev/sdk": "^0.4.5",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-terser": "^0.4.3",
     "@rollup/plugin-typescript": "^11.1.1",
@@ -64,8 +63,10 @@
     "uglify-js": "^3.17.4"
   },
   "dependencies": {
+    "@nfps.dev/sdk": "^0.4.5",
     "@blake.regalia/belt": "^0.12.0",
     "@solar-republic/neutrino": "^0.3.7",
+    "idb-keyval": "^6.2.1",
     "uri-js": "^4.4.1"
   },
   "publishConfig": {
