@@ -3,7 +3,7 @@ import type {A, L, S} from 'ts-toolbelt';
 
 import type {DocumentNamespace, HtmlNodeCreator, SvgNodeCreator} from './web';
 
-import type {Dict, JsonValue} from '@blake.regalia/belt';
+import {base64_to_buffer, buffer_to_base64, type Dict, type JsonValue} from '@blake.regalia/belt';
 
 import {safe_json} from '@solar-republic/neutrino';
 
@@ -138,18 +138,27 @@ export const create_html = creator(P_NS_HTML) as HtmlNodeCreator;
 
 
 
-export const ls_get_str = (si_key: string): string | null => localStorage.getItem(si_key);
+export const ls_read = (si_key: string): string | null => localStorage.getItem(si_key);
 
-export const ls_set_str = <
+export const ls_write = <
 	s_value extends string,
 >(si_key: string, s_value: s_value): s_value => (
 	localStorage.setItem(si_key, s_value),  // eslint-disable-line no-sequences
 	s_value);
 
-export const ls_get_json = <w_out extends JsonValue>(si_key: string): w_out | undefined => safe_json(ls_get_str(si_key) || '');
+export const ls_read_json = <w_out extends JsonValue>(si_key: string): w_out | undefined => safe_json(ls_read(si_key) || '');
 
-export const ls_set_json = <
+export const ls_write_json = <
 	w_value extends JsonValue,
 >(si_key: string, w_value: w_value): w_value => (
-	ls_set_str(si_key, JSON.stringify(w_value)),  // eslint-disable-line no-sequences
+	ls_write(si_key, JSON.stringify(w_value)),  // eslint-disable-line no-sequences
 	w_value);
+
+export const ls_read_b64 = (si_key: string): Uint8Array | null => {
+	const s_value = ls_read(si_key);
+	return null === s_value? s_value: base64_to_buffer(s_value);
+};
+
+export const ls_write_b64 = (si_key: string, atu8_data: Uint8Array): Uint8Array => (
+	ls_write(si_key, buffer_to_base64(atu8_data)),  // eslint-disable-line no-sequences
+	atu8_data);

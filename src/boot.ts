@@ -14,7 +14,7 @@ import {
 
 import {load_script} from './connectivity';
 import {P_NS_NFP} from './constants';
-import {ls_get_json, ls_get_str} from './dom';
+import {ls_read_json, ls_read} from './dom';
 
 
 export type SlimTokenLocation = [
@@ -110,10 +110,10 @@ const resolve_permit = async(): Promise<void | 1> => {
 	si_storage_vk = 'vk:'+s_location;
 
 	// check local storage for permit
-	g_permit = ls_get_json(si_storage_permit)!;
+	g_permit = ls_read_json(si_storage_permit)!;
 
 	// check local storage for viewing key
-	sh_vk = sh_vk || ls_get_str(si_storage_vk)!;
+	sh_vk = sh_vk || ls_read(si_storage_vk)!;
 
 	// use prompt as fallback
 	if(!g_permit && !sh_vk) import_query_key_prompt()!;
