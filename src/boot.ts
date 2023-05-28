@@ -52,7 +52,7 @@ const import_query_key_prompt = (): QueryPermit | string | void => {
 		// attempt to parse as json
 		let h_input!: QueryPermit;
 		try {
-			h_input = JSON.parse(sx_import);
+			h_input = JSON.parse(sx_import) as QueryPermit;
 		}
 		catch(e_parse) {}
 
