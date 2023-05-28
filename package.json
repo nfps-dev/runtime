@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@blake.regalia/belt": "^0.13.4",
-    "@nfps.dev/sdk": "^0.6.2",
+    "@nfps.dev/sdk": "^0.6.3",
     "@solar-republic/neutrino": "^0.4.1",
     "idb-keyval": "^6.2.1",
     "uri-js": "^4.4.1"

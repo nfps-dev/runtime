@@ -22,10 +22,10 @@ export const comcPortal = (p_host: HttpsUrl, dm_root: Element): Promise<HTMLIFra
 // };
 
 export type ComcClientHandlers = {
-	a?(g_key: KeplrKey): void;
-	s?(): void;
-	r?(s_reason: string): void;
-	n?(): void;
+	a?(g_key: KeplrKey): Promisable<void>;
+	s?(): Promisable<void>;
+	r?(s_reason: string): Promisable<void>;
+	n?(): Promisable<void>;
 };
 
 // type Ex = Exclude<JsonValue, never | void | undefined>;
