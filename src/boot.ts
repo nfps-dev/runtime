@@ -39,9 +39,9 @@ let g_permit: QueryPermit;
 let sh_vk: string;
 let xc_busy: 0 | 1 = 0;
 
-const nfp_tags = (si_tag: string) => document.getElementsByTagNameNS(P_NS_NFP, si_tag);
+export const nfp_tags = (si_tag: string) => document.getElementsByTagNameNS(P_NS_NFP, si_tag);
 
-const nfp_attr = (dm_element: Element, si_attr: string) => dm_element.getAttributeNS(P_NS_NFP, si_attr);
+export const nfp_attr = (dm_element: Element, si_attr: string) => dm_element.getAttributeNS(P_NS_NFP, si_attr);
 
 const import_query_key_prompt = (): QueryPermit | string | void => {
 	// prompt for key
@@ -141,7 +141,7 @@ export const boot = async(): Promise<void | BootInfo> => {
 		if(!dm_web || !dm_self) throw new Error('Missing requisite NFP tags');
 
 		// parse lcds attribute
-		const a_lcds = nfp_attr(dm_web, 'lcds')?.split(/,/g) as HttpsUrl[];
+		const a_lcds = nfp_attr(dm_web, 'lcds')?.split(',') as HttpsUrl[];
 		if(!a_lcds?.length) throw new Error('Missing nfp:lcds attribute');
 
 		// destructure nfp:self attribute values
