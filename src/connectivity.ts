@@ -53,7 +53,7 @@ export const load_script = async(
 		let s_encoding = g_data.content_encoding!;
 		if(s_encoding) {
 			const d_reader = new Blob([atu8_bytes]).stream()
-				.pipeThrough<Uint8Array>(new DecompressionStream(s_encoding))
+				.pipeThrough<Uint8Array>(new DecompressionStream(s_encoding as CompressionFormat))
 				.getReader();
 
 			const a_chunks: Uint8Array[] = [];
