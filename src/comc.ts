@@ -18,8 +18,8 @@ export type ArgsTupleEncryptMsg = [
 ];
 
 export type ArgsTupleDecryptMsg = [
-	sb16_code_hash: HexMixed,
-	atu8_msg: Uint8Array,
+	atu8_ciphertext: Uint8Array,
+	atu8_nonce: Uint8Array,
 ];
 
 export type ArgsTupleSignAmino = [
