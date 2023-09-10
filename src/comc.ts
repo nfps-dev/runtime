@@ -66,7 +66,7 @@ export type ReturnTupleEncrypt = [
 ];
 
 export type ReturnTupleAmino = [
-	g_signed_doc: TypedStdSignDoc,
+	g_signed_doc: StdSignDoc,
 	aut8_signature: Uint8Array,
 ];
 
