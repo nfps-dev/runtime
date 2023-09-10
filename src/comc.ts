@@ -42,21 +42,21 @@ export type ComcHostMessages = {
 	 * Request to encrypt a message for secret contract
 	 */
 	encrypt: {
-		args: [ArgsTupleEncryptMsg];
+		args: [a_args: ArgsTupleEncryptMsg];
 	};
 
 	/**
 	 * Request to sign a document in amino format
 	 */
 	amino: {
-		args: [ArgsTupleSignAmino];
+		args: [a_args: ArgsTupleSignAmino];
 	};
 
 	/**
 	 * Request to sign a document in proto format (direct)
 	 */
 	direct: {
-		args: [ArgsTupleSignDirect];
+		args: [a_args: ArgsTupleSignDirect];
 	};
 };
 
@@ -84,49 +84,49 @@ export type ComcClientMessages = {
 	 * Wallet not installed
 	 */
 	unavailable: {
-		args: [];
+		args: [si_req: string];
 	};
 
 	/**
 	 * Connection rejected
 	 */
 	rejected: {
-		args: [s_reason: string];
+		args: [s_reason: string, si_req: string];
 	};
 
 	/**
 	 * Unknown error occurred
 	 */
 	error: {
-		args: [s_reason: string];
+		args: [s_reason: string, si_req: string];
 	};
 
 	/**
 	 * Connection approved
 	 */
 	approved: {
-		args: [g_key: KeplrKey];
+		args: [g_key: KeplrKey, si_req: string];
 	};
 
 	/**
 	 * Contract message was encrypted
 	 */
 	$encrypt: {
-		args: [ReturnTupleEncrypt];
+		args: [a_return: ReturnTupleEncrypt, si_req: string];
 	};
 
 	/**
 	 * Amino document was signed
 	 */
 	$amino: {
-		args: [ReturnTupleAmino];
+		args: [a_return: ReturnTupleAmino, si_req: string];
 	};
 
 	/**
 	 * Proto document was signed
 	 */
 	$direct: {
-		args: [ReturnTupleDirect];
+		args: [a_return: ReturnTupleDirect, si_req: string];
 	};
 };
 
@@ -194,15 +194,17 @@ export const comcClient = (
 
 	addEventListener('message', (d_event) => {
 		const {
+			id: si_req,
 			type: si_type,
 			value: w_value,
 		} = d_event.data as {
+			id: string;
 			type: keyof ComcClientHandlers;
 			value: any;
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		void h_handlers[si_type]?.(w_value);
+		void h_handlers[si_type]?.(w_value, si_req);
 	});
 
 	return {
