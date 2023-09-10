@@ -38,7 +38,7 @@ export type ComcHostMessages = {
 	 * Request to open a new connection
 	 */
 	open: {
-		args: [ArgsConfigOpen];
+		args: [[gc_init: ArgsConfigOpen, w_data?: any]];
 	};
 
 	/**
@@ -64,15 +64,22 @@ export type ComcHostMessages = {
 };
 
 
-export type ArgsTupleEncrypted<w_data=any> = [
+export type ReturnTupleEncrypt<w_data=any> = [
 	aut8_encrypted: Uint8Array,
 	w_data: w_data,
 ];
 
-export type ArgsTupleAminoed<w_data=any> = [
+export type ReturnTupleAmino<w_data=any> = [
 	g_signed_doc: TypedStdSignDoc,
 	aut8_signature: Uint8Array,
 	w_data: w_data,
+];
+
+export type ReturnTupleDirect<w_data=any> = [
+	atu8_auth: Uint8Array,
+	atu8_body: Uint8Array,
+	atu8_signature: Uint8Array,
+	w_data?: any,
 ];
 
 /**
@@ -83,14 +90,21 @@ export type ComcClientMessages = {
 	 * Wallet not installed
 	 */
 	unavailable: {
-		args: [];
+		args: [w_data?: any];
 	};
 
 	/**
 	 * Connection rejected
 	 */
 	rejected: {
-		args: [];
+		args: [w_data?: any];
+	};
+
+	/**
+	 * Unknown error occurred
+	 */
+	error: {
+		args: [s_reason: string, w_data?: any];
 	};
 
 	/**
@@ -104,21 +118,21 @@ export type ComcClientMessages = {
 	 * Contract message was encrypted
 	 */
 	$encrypt: {
-		args: [ArgsTupleEncrypted];
+		args: [ReturnTupleEncrypt];
 	};
 
 	/**
 	 * Amino document was signed
 	 */
 	$amino: {
-		args: [ArgsTupleAminoed];
+		args: [ReturnTupleAmino];
 	};
 
 	/**
 	 * Proto document was signed
 	 */
 	$direct: {
-		args: [];
+		args: [ReturnTupleDirect];
 	};
 };
 
