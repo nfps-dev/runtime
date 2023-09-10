@@ -11,23 +11,20 @@ export interface ArgsConfigOpen {
 	ref: string;
 }
 
-export type ArgsTupleSignDirect<w_data=any> = [
+export type ArgsTupleSignDirect = [
 	atu8_auth: Uint8Array,
 	atu8_body: Uint8Array,
 	sg_account: `${bigint}`,
-	w_data?: w_data,
 ];
 
-export type ArgsTupleSignAmino<w_data=any> = [
+export type ArgsTupleSignAmino = [
 	g_body: StdSignDoc,
 	sa_signer: string,
-	w_data?: w_data,
 ];
 
-export type ArgsTupleEncryptMsg<w_data=any> = [
+export type ArgsTupleEncryptMsg = [
 	sb16_code_hash: HexMixed,
 	h_msg: JsonObject,
-	w_data?: w_data,
 ];
 
 /**
@@ -38,7 +35,7 @@ export type ComcHostMessages = {
 	 * Request to open a new connection
 	 */
 	open: {
-		args: [[gc_init: ArgsConfigOpen, w_data?: any]];
+		args: [gc_init: ArgsConfigOpen];
 	};
 
 	/**
@@ -64,22 +61,19 @@ export type ComcHostMessages = {
 };
 
 
-export type ReturnTupleEncrypt<w_data=any> = [
+export type ReturnTupleEncrypt = [
 	aut8_encrypted: Uint8Array,
-	w_data: w_data,
 ];
 
-export type ReturnTupleAmino<w_data=any> = [
+export type ReturnTupleAmino = [
 	g_signed_doc: TypedStdSignDoc,
 	aut8_signature: Uint8Array,
-	w_data: w_data,
 ];
 
-export type ReturnTupleDirect<w_data=any> = [
+export type ReturnTupleDirect = [
 	atu8_auth: Uint8Array,
 	atu8_body: Uint8Array,
 	atu8_signature: Uint8Array,
-	w_data?: any,
 ];
 
 /**
@@ -90,21 +84,21 @@ export type ComcClientMessages = {
 	 * Wallet not installed
 	 */
 	unavailable: {
-		args: [w_data?: any];
+		args: [];
 	};
 
 	/**
 	 * Connection rejected
 	 */
 	rejected: {
-		args: [w_data?: any];
+		args: [s_reason: string];
 	};
 
 	/**
 	 * Unknown error occurred
 	 */
 	error: {
-		args: [s_reason: string, w_data?: any];
+		args: [s_reason: string];
 	};
 
 	/**
@@ -174,7 +168,7 @@ export type ComcClientHandlers<
 
 
 export interface ComcClient {
-	post<si_cmd extends keyof ComcHostMessages>(si_cmd: si_cmd, w_msg: ComcHostMessages[si_cmd]['args']): void;
+	post<si_cmd extends keyof ComcHostMessages>(si_cmd: si_cmd, w_msg: ComcHostMessages[si_cmd]['args'], si_req: string): void;
 }
 
 
@@ -212,7 +206,8 @@ export const comcClient = (
 	});
 
 	return {
-		post: (si_type, w_value) => d_window.postMessage({
+		post: (si_type, w_value, si_req='') => d_window.postMessage({
+			id: si_req,
 			type: si_type,
 			value: w_value,
 		}, '*'),
