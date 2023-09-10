@@ -11,10 +11,15 @@ export interface ArgsConfigOpen {
 	ref: string;
 }
 
-export type ArgsTupleSignDirect = [
-	atu8_auth: Uint8Array,
-	atu8_body: Uint8Array,
-	sg_account: `${bigint}`,
+
+export type ArgsTupleEncryptMsg = [
+	sb16_code_hash: HexMixed,
+	h_msg: JsonObject,
+];
+
+export type ArgsTupleDecryptMsg = [
+	sb16_code_hash: HexMixed,
+	atu8_msg: Uint8Array,
 ];
 
 export type ArgsTupleSignAmino = [
@@ -22,10 +27,12 @@ export type ArgsTupleSignAmino = [
 	sa_signer: string,
 ];
 
-export type ArgsTupleEncryptMsg = [
-	sb16_code_hash: HexMixed,
-	h_msg: JsonObject,
+export type ArgsTupleSignDirect = [
+	atu8_auth: Uint8Array,
+	atu8_body: Uint8Array,
+	sg_account: `${bigint}`,
 ];
+
 
 /**
  * Host handlers
@@ -46,6 +53,13 @@ export type ComcHostMessages = {
 	};
 
 	/**
+	 * Request to decrypt a message for secret contract
+	 */
+	decrypt: {
+		arg: ArgsTupleDecryptMsg;
+	};
+
+	/**
 	 * Request to sign a document in amino format
 	 */
 	amino: {
@@ -63,6 +77,10 @@ export type ComcHostMessages = {
 
 export type ReturnTupleEncrypt = [
 	aut8_encrypted: Uint8Array,
+];
+
+export type ReturnTupleDecrypt = [
+	aut8_decrypted: Uint8Array,
 ];
 
 export type ReturnTupleAmino = [
@@ -113,6 +131,13 @@ export type ComcClientMessages = {
 	 */
 	$encrypt: {
 		return: ReturnTupleEncrypt;
+	};
+
+	/**
+	 * Message from contract was decrypted
+	 */
+	$decrypt: {
+		return: ReturnTupleDecrypt;
 	};
 
 	/**
