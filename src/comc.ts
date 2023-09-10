@@ -143,7 +143,7 @@ export type ComcHostHandlers<
 	},
 > = {
 	[si_key in keyof ComcHostMessages]: F.Function<
-		[ComcHostMessages[si_key]['arg']],
+		[si_req: string, arg: ComcHostMessages[si_key]['arg']],
 		HasKey<h_returns, si_key, h_returns[si_key],
 			HasKey<h_returns, '_default', h_returns['_default'], any>>
 	>;
