@@ -35,28 +35,28 @@ export type ComcHostMessages = {
 	 * Request to open a new connection
 	 */
 	open: {
-		args: [gc_init: ArgsConfigOpen];
+		arg: ArgsConfigOpen;
 	};
 
 	/**
 	 * Request to encrypt a message for secret contract
 	 */
 	encrypt: {
-		args: [a_args: ArgsTupleEncryptMsg];
+		arg: ArgsTupleEncryptMsg;
 	};
 
 	/**
 	 * Request to sign a document in amino format
 	 */
 	amino: {
-		args: [a_args: ArgsTupleSignAmino];
+		arg: ArgsTupleSignAmino;
 	};
 
 	/**
 	 * Request to sign a document in proto format (direct)
 	 */
 	direct: {
-		args: [a_args: ArgsTupleSignDirect];
+		arg: ArgsTupleSignDirect;
 	};
 };
 
@@ -84,49 +84,49 @@ export type ComcClientMessages = {
 	 * Wallet not installed
 	 */
 	unavailable: {
-		args: [si_req: string];
+		return: string;
 	};
 
 	/**
 	 * Connection rejected
 	 */
 	rejected: {
-		args: [s_reason: string, si_req: string];
+		return: string;
 	};
 
 	/**
 	 * Unknown error occurred
 	 */
 	error: {
-		args: [s_reason: string, si_req: string];
+		return: string;
 	};
 
 	/**
 	 * Connection approved
 	 */
 	approved: {
-		args: [g_key: KeplrKey, si_req: string];
+		return: KeplrKey;
 	};
 
 	/**
 	 * Contract message was encrypted
 	 */
 	$encrypt: {
-		args: [a_return: ReturnTupleEncrypt, si_req: string];
+		return: ReturnTupleEncrypt;
 	};
 
 	/**
 	 * Amino document was signed
 	 */
 	$amino: {
-		args: [a_return: ReturnTupleAmino, si_req: string];
+		return: ReturnTupleAmino;
 	};
 
 	/**
 	 * Proto document was signed
 	 */
 	$direct: {
-		args: [a_return: ReturnTupleDirect, si_req: string];
+		return: ReturnTupleDirect;
 	};
 };
 
@@ -143,7 +143,7 @@ export type ComcHostHandlers<
 	},
 > = {
 	[si_key in keyof ComcHostMessages]: F.Function<
-		ComcHostMessages[si_key]['args'],
+		[ComcHostMessages[si_key]['arg']],
 		HasKey<h_returns, si_key, h_returns[si_key],
 			HasKey<h_returns, '_default', h_returns['_default'], any>>
 	>;
@@ -159,16 +159,15 @@ export type ComcClientHandlers<
 	},
 > = {
 	[si_key in keyof ComcClientMessages]: F.Function<
-		ComcClientMessages[si_key]['args'],
+		[w_return: ComcClientMessages[si_key]['return'], si_req: string],
 		HasKey<h_returns, si_key, h_returns[si_key],
 			HasKey<h_returns, '_default', h_returns['_default'], any>>
 	>;
 };
 
 
-
 export interface ComcClient {
-	post<si_cmd extends keyof ComcHostMessages>(si_cmd: si_cmd, w_msg: ComcHostMessages[si_cmd]['args'], si_req: string): void;
+	post<si_cmd extends keyof ComcHostMessages>(si_cmd: si_cmd, w_msg: ComcHostMessages[si_cmd]['arg'], si_req: string): void;
 }
 
 
