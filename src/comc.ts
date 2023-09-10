@@ -1,8 +1,168 @@
-import type {Dict, JsonObject, JsonValue, Promisable} from '@blake.regalia/belt';
-import type {Key as KeplrKey} from '@keplr-wallet/types';
-import type {HttpsUrl} from '@solar-republic/neutrino';
+import type {F} from 'ts-toolbelt';
+
+import type {HexMixed, JsonObject, Promisable} from '@blake.regalia/belt';
+import type {Key as KeplrKey, StdSignDoc} from '@keplr-wallet/types';
+import type {HttpsUrl, TypedStdSignDoc} from '@solar-republic/neutrino';
 
 import {create_html} from './dom';
+
+export interface ArgsConfigOpen {
+	href: string;
+	ref: string;
+}
+
+export type ArgsTupleSignDirect<w_data=any> = [
+	atu8_auth: Uint8Array,
+	atu8_body: Uint8Array,
+	sg_account: `${bigint}`,
+	w_data?: w_data,
+];
+
+export type ArgsTupleSignAmino<w_data=any> = [
+	g_body: StdSignDoc,
+	sa_signer: string,
+	w_data?: w_data,
+];
+
+export type ArgsTupleEncryptMsg<w_data=any> = [
+	sb16_code_hash: HexMixed,
+	h_msg: JsonObject,
+	w_data?: w_data,
+];
+
+/**
+ * Host handlers
+ */
+export type ComcHostMessages = {
+	/**
+	 * Request to open a new connection
+	 */
+	open: {
+		args: [ArgsConfigOpen];
+	};
+
+	/**
+	 * Request to encrypt a message for secret contract
+	 */
+	encrypt: {
+		args: [ArgsTupleEncryptMsg];
+	};
+
+	/**
+	 * Request to sign a document in amino format
+	 */
+	amino: {
+		args: [ArgsTupleSignAmino];
+	};
+
+	/**
+	 * Request to sign a document in proto format (direct)
+	 */
+	direct: {
+		args: [ArgsTupleSignDirect];
+	};
+};
+
+
+export type ArgsTupleEncrypted<w_data=any> = [
+	aut8_encrypted: Uint8Array,
+	w_data: w_data,
+];
+
+export type ArgsTupleAminoed<w_data=any> = [
+	g_signed_doc: TypedStdSignDoc,
+	aut8_signature: Uint8Array,
+	w_data: w_data,
+];
+
+/**
+ * Client handlers
+ */
+export type ComcClientMessages = {
+	/**
+	 * Wallet not installed
+	 */
+	unavailable: {
+		args: [];
+	};
+
+	/**
+	 * Connection rejected
+	 */
+	rejected: {
+		args: [];
+	};
+
+	/**
+	 * Connection approved
+	 */
+	approved: {
+		args: [g_key: KeplrKey];
+	};
+
+	/**
+	 * Contract message was encrypted
+	 */
+	$encrypt: {
+		args: [ArgsTupleEncrypted];
+	};
+
+	/**
+	 * Amino document was signed
+	 */
+	$amino: {
+		args: [ArgsTupleAminoed];
+	};
+
+	/**
+	 * Proto document was signed
+	 */
+	$direct: {
+		args: [];
+	};
+};
+
+
+type HasKey<w_thing, si_key, w_yes=1, w_no=0> = si_key extends Extract<keyof w_thing, si_key>? w_yes: w_no;
+
+export type ComcHostHandlers<
+	h_returns extends {
+		[si_key in keyof ComcHostMessages]?: any;
+	} & {
+		_default?: any;
+	}={
+		_default: Promisable<void>;
+	},
+> = {
+	[si_key in keyof ComcHostMessages]: F.Function<
+		ComcHostMessages[si_key]['args'],
+		HasKey<h_returns, si_key, h_returns[si_key],
+			HasKey<h_returns, '_default', h_returns['_default'], any>>
+	>;
+};
+
+export type ComcClientHandlers<
+	h_returns extends {
+		[si_key in keyof ComcClientMessages]?: any;
+	} & {
+		_default?: any;
+	}={
+		_default: Promisable<void>;
+	},
+> = {
+	[si_key in keyof ComcClientMessages]: F.Function<
+		ComcClientMessages[si_key]['args'],
+		HasKey<h_returns, si_key, h_returns[si_key],
+			HasKey<h_returns, '_default', h_returns['_default'], any>>
+	>;
+};
+
+
+
+export interface ComcClient {
+	post<si_cmd extends keyof ComcHostMessages>(si_cmd: si_cmd, w_msg: ComcHostMessages[si_cmd]['args']): void;
+}
+
 
 export const comcPortal = (p_host: HttpsUrl, dm_root: Element): Promise<HTMLIFrameElement> => new Promise((fk_resolve) => {
 	const dm_iframe = create_html('iframe', {
@@ -16,24 +176,6 @@ export const comcPortal = (p_host: HttpsUrl, dm_root: Element): Promise<HTMLIFra
 
 	dm_root.append(dm_iframe);
 });
-
-// export type ComcHostHandlers = {
-
-// };
-
-export type ComcClientHandlers = {
-	a?(g_key: KeplrKey): Promisable<void>;
-	s?(): Promisable<void>;
-	r?(s_reason: string): Promisable<void>;
-	n?(): Promisable<void>;
-};
-
-// type Ex = Exclude<JsonValue, never | void | undefined>;
-// type In = U.IntersectOf<Ex>;
-
-export interface ComcClient {
-	post(si_type: string, w_msg: any): void;
-}
 
 export const comcClient = (
 	dm_iframe: HTMLIFrameElement,
@@ -52,16 +194,14 @@ export const comcClient = (
 		};
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		h_handlers[si_type]?.(w_value);
+		void h_handlers[si_type]?.(w_value);
 	});
 
-	const post = (si_type: string, w_value: any) => d_window.postMessage({
-		type: si_type,
-		value: w_value,
-	}, '*');
-
 	return {
-		post,
+		post: (si_type, w_value) => d_window.postMessage({
+			type: si_type,
+			value: w_value,
+		}, '*'),
 	};
 };
 
