@@ -1,199 +1,113 @@
-import type {F} from 'ts-toolbelt';
+import type {A, O} from 'ts-toolbelt';
 
-import type {HexMixed, JsonObject, Promisable} from '@blake.regalia/belt';
+import type {Dict, HexMixed, JsonObject, JsonValue} from '@blake.regalia/belt';
 import type {Key as KeplrKey, StdSignDoc} from '@keplr-wallet/types';
-import type {HttpsUrl, TypedStdSignDoc} from '@solar-republic/neutrino';
+import type {HttpsUrl} from '@solar-republic/neutrino';
+
+import {uuid_v4} from '@blake.regalia/belt';
 
 import {create_html} from './dom';
 
-export interface ArgsConfigOpen {
-	href: string;
-	ref: string;
-}
+
+export const XC_CMD_CONNECT = 1;
+export const XC_CMD_DISCONNECT = 2;
+export const XC_CMD_SIGN_AMINO_INFERRED = 3;
+export const XC_CMD_SECRET_ENCRYPT = 4;
+export const XC_CMD_SECRET_DECRYPT = 5;
+
+// export const XC_CMD_ENABLE = 1;
+// export const XC_CMD_DISABLE = 5;
+// export const XC_CMD_GET_KEY = 6;
+
+// export const XC_CMD_SIGN_AMINO = 10;
+// export const XC_CMD_SIGN_DIRECT = 11;
+// export const XC_CMD_SIGN_TEXTUAL = 12;
+
+// export const XC_CMD_SIGN_ARBITRARY = 20;
+// export const XC_CMD_VERIFY_ARBITRARY = 21;
+
+// export const XC_CMD_SUGGEST_TOKEN = 30;
+// export const XC_CMD_SUGGEST_CHAIN = 31;
+
+// export const XC_CMD_SECRET_ENCRYPT = 40;
+// export const XC_CMD_SECRET_DECRYPT = 41;
+// export const XC_CMD_SECRET_GET_TX_ENCRYPTION_KEY = 42;
+// export const XC_CMD_SECRET_GET_VIEWING_KEY = 43;
 
 
-export type ArgsTupleEncryptMsg = [
-	sb16_code_hash: HexMixed,
-	h_msg: JsonObject,
-];
+export type Serializable = JsonValue<
+	| ArrayBuffer
+	| ArrayBufferView
+	| DataView
+	| Date
+	| Error
+	| Map<Serializable, Serializable>
+	| RegExp
+	| Set<Serializable>
+	| String
+>;
 
-export type ArgsTupleDecryptMsg = [
-	atu8_ciphertext: Uint8Array,
-	atu8_nonce: Uint8Array,
-];
+type CommandDef<h_def extends Record<number, {
+	req: Serializable;
+	res: Serializable;
+}>> = h_def;
 
-export type ArgsTupleSignAmino = [
-	g_body: StdSignDoc,
-	sa_signer: string,
-];
+type WritableSignDoc = O.Writable<StdSignDoc, A.Key, 'deep'>;
 
-export type ArgsTupleSignDirect = [
-	atu8_auth: Uint8Array,
-	atu8_body: Uint8Array,
-	sg_account: `${bigint}`,
-];
+export type ComcCommands = CommandDef<{
+	[XC_CMD_CONNECT]: {
+		req: [
+			p_origin: string,
+			si_chain: string,
+		];
 
-
-/**
- * Host handlers
- */
-export type ComcHostMessages = {
-	/**
-	 * Request to open a new connection
-	 */
-	open: {
-		arg: ArgsConfigOpen;
+		res: O.Writable<KeplrKey>;
 	};
 
-	/**
-	 * Request to encrypt a message for secret contract
-	 */
-	encrypt: {
-		arg: ArgsTupleEncryptMsg;
+	[XC_CMD_DISCONNECT]: {
+		req: [];
+
+		res: [];
 	};
 
-	/**
-	 * Request to decrypt a message for secret contract
-	 */
-	decrypt: {
-		arg: ArgsTupleDecryptMsg;
+	[XC_CMD_SIGN_AMINO_INFERRED]: {
+		req: [
+			g_doc: WritableSignDoc,
+		];
+
+		res: [
+			g_signed: WritableSignDoc,
+			atu8_signature: Uint8Array,
+		];
 	};
 
-	/**
-	 * Request to sign a document in amino format
-	 */
-	amino: {
-		arg: ArgsTupleSignAmino;
+	[XC_CMD_SECRET_ENCRYPT]: {
+		req: [
+			sb16_code_hash: HexMixed,
+			h_msg: JsonObject,
+		];
+
+		res: Uint8Array;
 	};
 
-	/**
-	 * Request to sign a document in proto format (direct)
-	 */
-	direct: {
-		arg: ArgsTupleSignDirect;
+	[XC_CMD_SECRET_DECRYPT]: {
+		req: [
+			atu8_ciphertext: Uint8Array,
+			atu8_nonce: Uint8Array,
+		];
+
+		res: Uint8Array;
 	};
-};
+}>;
 
-
-export type ReturnTupleEncrypt = [
-	aut8_encrypted: Uint8Array,
-];
-
-export type ReturnTupleDecrypt = [
-	aut8_decrypted: Uint8Array,
-];
-
-export type ReturnTupleAmino = [
-	g_signed_doc: StdSignDoc,
-	aut8_signature: Uint8Array,
-];
-
-export type ReturnTupleDirect = [
-	atu8_auth: Uint8Array,
-	atu8_body: Uint8Array,
-	atu8_signature: Uint8Array,
-];
-
-
-/**
- * Client handlers
- */
-export type ComcClientMessages = {
-	/**
-	 * Wallet not installed
-	 */
-	unavailable: {
-		return: string;
-	};
-
-	/**
-	 * Connection rejected
-	 */
-	rejected: {
-		return: string;
-	};
-
-	/**
-	 * Unknown error occurred
-	 */
-	error: {
-		return: string;
-	};
-
-	/**
-	 * Connection approved
-	 */
-	approved: {
-		return: KeplrKey;
-	};
-
-	/**
-	 * Contract message was encrypted
-	 */
-	$encrypt: {
-		return: ReturnTupleEncrypt;
-	};
-
-	/**
-	 * Message from contract was decrypted
-	 */
-	$decrypt: {
-		return: ReturnTupleDecrypt;
-	};
-
-	/**
-	 * Amino document was signed
-	 */
-	$amino: {
-		return: ReturnTupleAmino;
-	};
-
-	/**
-	 * Proto document was signed
-	 */
-	$direct: {
-		return: ReturnTupleDirect;
-	};
-};
-
-
-type HasKey<w_thing, si_key, w_yes=1, w_no=0> = si_key extends Extract<keyof w_thing, si_key>? w_yes: w_no;
-
-export type ComcHostHandlers<
-	h_returns extends {
-		[si_key in keyof ComcHostMessages]?: any;
-	} & {
-		_default?: any;
-	}={
-		_default: Promisable<void>;
-	},
-> = {
-	[si_key in keyof ComcHostMessages]: F.Function<
-		[si_req: string, arg: ComcHostMessages[si_key]['arg']],
-		HasKey<h_returns, si_key, h_returns[si_key],
-			HasKey<h_returns, '_default', h_returns['_default'], any>>
-	>;
-};
-
-export type ComcClientHandlers<
-	h_returns extends {
-		[si_key in keyof ComcClientMessages]?: any;
-	} & {
-		_default?: any;
-	}={
-		_default: Promisable<void>;
-	},
-> = {
-	[si_key in keyof ComcClientMessages]: F.Function<
-		[w_return: ComcClientMessages[si_key]['return'], si_req: string],
-		HasKey<h_returns, si_key, h_returns[si_key],
-			HasKey<h_returns, '_default', h_returns['_default'], any>>
-	>;
-};
+export type ComcCommand = keyof ComcCommands;
 
 
 export interface ComcClient {
-	post<si_cmd extends keyof ComcHostMessages>(si_cmd: si_cmd, w_msg: ComcHostMessages[si_cmd]['arg'], si_req: string): void;
+	post<
+		xc_cmd extends ComcCommand,
+		g_cmd extends ComcCommands[xc_cmd]=ComcCommands[xc_cmd],
+	>(xc_cmd: xc_cmd, w_arg: g_cmd['req']): Promise<g_cmd['res']>;
 }
 
 
@@ -211,50 +125,52 @@ export const comcPortal = (p_host: HttpsUrl, dm_root: Element): Promise<HTMLIFra
 });
 
 export const comcClient = (
-	dm_iframe: HTMLIFrameElement,
-	h_handlers: ComcClientHandlers
+	dm_iframe: HTMLIFrameElement
 ): ComcClient => {
 	const d_window = dm_iframe.contentWindow;
-	if(!d_window) throw 'Unable to access iframe content window at '+dm_iframe.src;
+	if(!d_window) throw new Error('Unable to access iframe content window at '+dm_iframe.src);
 
+	// requests dict
+	const h_requests: Dict<[
+		(w_value: any) => any,
+		(w_reason: any) => any,
+	]> = {};
+
+	// response handler
 	addEventListener('message', (d_event) => {
-		const {
-			id: si_req,
-			type: si_type,
-			value: w_value,
-		} = d_event.data as {
-			id: string;
-			type: keyof ComcClientHandlers;
-			value: any;
-		};
+		try {
+			// destructure response
+			const [
+				si_req,
+				xc_result,
+				w_value,
+			] = d_event.data as [
+				si_req: string,
+				xc_result: 0 | 1,
+				w_value: Serializable,
+			];
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-		void h_handlers[si_type]?.(w_value, si_req);
+			// route
+			h_requests[si_req]![xc_result]!(w_value);
+
+			// clean
+			delete h_requests[si_req];
+		}
+		catch(e_process) {}
 	});
 
+	// client instance
 	return {
-		post: (si_type, w_value, si_req='') => d_window.postMessage({
-			id: si_req,
-			type: si_type,
-			value: w_value,
-		}, '*'),
+		post: (xc_cmd: ComcCommand, w_arg: Serializable, si_req=uuid_v4()) => new Promise((fk_resolve, fe_reject) => {
+			// save resolver to request dict
+			h_requests[si_req] = [fk_resolve, fe_reject];
+
+			// post message to frame
+			d_window.postMessage([
+				si_req,
+				xc_cmd,
+				w_arg,
+			], '*');
+		}),
 	};
 };
-
-// 	// eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-// 	const dm_iframe = document.querySelector('#i-s2r') as HTMLIFrameElement;
-
-// 	const f_client = comcClient(dm_iframe.contentWindow!, 'http://localhost:8080');
-
-// 	const f_keplr = (si_method: string, a_args?: any[]) => f_client('keplr', [si_method, a_args]);
-
-// 	const w_res = await f_keplr('enable', [si_reference]);
-
-// 	const [] = f_keplr('getOfflineSignerOnlyAmino', [si_reference]);
-
-
-
-// 	console.log(w_res);
-// 	debugger;
-
-// };
