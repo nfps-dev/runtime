@@ -11,10 +11,11 @@ import {create_html} from './dom';
 
 export const XC_CMD_CONNECT = 1;
 export const XC_CMD_DISCONNECT = 2;
-export const XC_CMD_SIGN_AUTO = 3;
-export const XC_CMD_EXEC_CONTRACT = 4;
-export const XC_CMD_SECRET_ENCRYPT = 5;
-export const XC_CMD_SECRET_DECRYPT = 6;
+export const XC_CMD_ACCOUNT_CHANGED = 3;
+export const XC_CMD_SIGN_AUTO = 4;
+export const XC_CMD_EXEC_CONTRACT = 5;
+export const XC_CMD_SECRET_ENCRYPT = 6;
+export const XC_CMD_SECRET_DECRYPT = 7;
 
 // export const XC_CMD_ENABLE = 1;
 // export const XC_CMD_DISABLE = 5;
@@ -67,6 +68,12 @@ export type ComcCommands = CommandDef<{
 		req: void;
 
 		res: void;
+	};
+
+	[XC_CMD_ACCOUNT_CHANGED]: {
+		req: void;
+
+		res: KeplrKey;
 	};
 
 	[XC_CMD_SIGN_AUTO]: {
