@@ -1,6 +1,6 @@
 import type {A, O} from 'ts-toolbelt';
 
-import type {Dict, HexMixed, JsonObject, JsonValue} from '@blake.regalia/belt';
+import type {Dict, HexMixed, JsonObject, JsonValue, Promisable} from '@blake.regalia/belt';
 import type {Key as KeplrKey, StdSignDoc} from '@keplr-wallet/types';
 import type {HttpsUrl} from '@solar-republic/neutrino';
 
@@ -11,9 +11,10 @@ import {create_html} from './dom';
 
 export const XC_CMD_CONNECT = 1;
 export const XC_CMD_DISCONNECT = 2;
-export const XC_CMD_SIGN_AMINO_INFERRED = 3;
-export const XC_CMD_SECRET_ENCRYPT = 4;
-export const XC_CMD_SECRET_DECRYPT = 5;
+export const XC_CMD_SIGN_AUTO = 3;
+export const XC_CMD_EXEC_CONTRACT = 4;
+export const XC_CMD_SECRET_ENCRYPT = 5;
+export const XC_CMD_SECRET_DECRYPT = 6;
 
 // export const XC_CMD_ENABLE = 1;
 // export const XC_CMD_DISABLE = 5;
@@ -70,15 +71,24 @@ export type ComcCommands = CommandDef<{
 		res: [];
 	};
 
-	[XC_CMD_SIGN_AMINO_INFERRED]: {
+	[XC_CMD_SIGN_AUTO]: {
 		req: [
-			g_doc: WritableSignDoc,
+			atu8_msg: Uint8Array,
 		];
 
 		res: [
 			g_signed: WritableSignDoc,
 			atu8_signature: Uint8Array,
 		];
+	};
+
+	[XC_CMD_EXEC_CONTRACT]: {
+		req: [
+			sb16_code_hash: HexMixed,
+			h_msg: JsonObject,
+		];
+
+		res: Uint8Array;
 	};
 
 	[XC_CMD_SECRET_ENCRYPT]: {
