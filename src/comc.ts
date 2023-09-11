@@ -1,8 +1,8 @@
 import type {A, O} from 'ts-toolbelt';
 
-import type {Dict, HexMixed, JsonObject, JsonValue, Promisable} from '@blake.regalia/belt';
+import type {Dict, HexMixed, JsonObject, JsonValue, Promisable, Uint128} from '@blake.regalia/belt';
 import type {Key as KeplrKey, StdSignDoc} from '@keplr-wallet/types';
-import type {HttpsUrl} from '@solar-republic/neutrino';
+import type {HttpsUrl, SlimAuthInfo} from '@solar-republic/neutrino';
 
 import {uuid_v4} from '@blake.regalia/belt';
 
@@ -72,6 +72,8 @@ export type ComcCommands = CommandDef<{
 	[XC_CMD_SIGN_AUTO]: {
 		req: [
 			atu8_msg: Uint8Array,
+			sg_limit: Uint128,
+			a_auth: SlimAuthInfo,
 		];
 
 		res: [
