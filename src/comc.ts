@@ -49,11 +49,9 @@ export type Serializable = JsonValue<
 >;
 
 type CommandDef<h_def extends Record<number, {
-	req: Serializable;
-	res: Serializable;
+	req: any;
+	res: any;
 }>> = h_def;
-
-type WritableSignDoc = O.Writable<StdSignDoc, A.Key, 'deep'>;
 
 export type ComcCommands = CommandDef<{
 	[XC_CMD_CONNECT]: {
@@ -62,13 +60,13 @@ export type ComcCommands = CommandDef<{
 			si_chain: string,
 		];
 
-		res: O.Writable<KeplrKey>;
+		res: KeplrKey;
 	};
 
 	[XC_CMD_DISCONNECT]: {
-		req: [];
+		req: void;
 
-		res: [];
+		res: void;
 	};
 
 	[XC_CMD_SIGN_AUTO]: {
@@ -77,7 +75,7 @@ export type ComcCommands = CommandDef<{
 		];
 
 		res: [
-			g_signed: WritableSignDoc,
+			g_signed: StdSignDoc,
 			atu8_signature: Uint8Array,
 		];
 	};
@@ -171,7 +169,7 @@ export const comcClient = (
 
 	// client instance
 	return {
-		post: (xc_cmd: ComcCommand, w_arg: Serializable, si_req=uuid_v4()) => new Promise((fk_resolve, fe_reject) => {
+		post: (xc_cmd: ComcCommand, w_arg: Serializable | void, si_req=uuid_v4()) => new Promise((fk_resolve, fe_reject) => {
 			// save resolver to request dict
 			h_requests[si_req] = [fk_resolve, fe_reject];
 
