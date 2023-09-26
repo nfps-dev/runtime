@@ -9,7 +9,9 @@
 		"declarationDir": "dist/mjs",
 
 		"noUncheckedIndexedAccess": true,
-		"noPropertyAccessFromIndexSignature": false
+		"noPropertyAccessFromIndexSignature": false,
+
+		"moduleResolution": "Bundler"
 	},
 
 	"include": [

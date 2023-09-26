@@ -9,6 +9,7 @@ import {
 	base64_to_buffer,
 	buffer_to_text,
 	concat,
+	type JsonObject,
 } from '@blake.regalia/belt';
 
 import {
@@ -28,11 +29,11 @@ export const load_script = async(
 	z_auth: AuthSecret
 ): Promise<SVGScriptElement | void> => {
 	// submit query
-	const [g_version, xc_code, s_error, h_response] = await query_contract_infer<PackageVersionInfo>(k_contract, 'package_version', {
+	const [g_version, xc_code, s_error, h_response] = await query_contract_infer(k_contract, 'package_version', {
 		package_id: si_package,
 		token_id: a_location[2],
 		...h_query,
-	}, z_auth);
+	}, z_auth) as unknown as [PackageVersionInfo, number, string, JsonObject];
 
 	// query error
 	if(!g_version) return alert(s_error || JSON.stringify(h_response));

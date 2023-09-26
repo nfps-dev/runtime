@@ -1,8 +1,7 @@
-import type {
-	QueryPermit,
-	HttpsUrl,
-	SecretBech32,
-} from '@solar-republic/neutrino';
+import type {QueryPermit, SecretAccAddr} from '@solar-republic/contractor';
+
+import type {HttpsUrl} from '@solar-republic/neutrino';
+
 
 import {
 	ofe,
@@ -19,7 +18,7 @@ import {ls_read_json, ls_read} from './dom';
 
 export type SlimTokenLocation = [
 	si_chain: string,
-	sa_contract: SecretBech32,
+	sa_contract: SecretAccAddr,
 	si_token: string,
 ];
 
