@@ -17,6 +17,9 @@ export const XC_CMD_EXEC_CONTRACT = 5;
 export const XC_CMD_SECRET_ENCRYPT = 6;
 export const XC_CMD_SECRET_DECRYPT = 7;
 
+export const XC_CMD_STORE_DATA = 8;
+export const XC_CMD_FETCH_DATA = 9;
+
 // export const XC_CMD_ENABLE = 1;
 // export const XC_CMD_DISABLE = 5;
 // export const XC_CMD_GET_KEY = 6;
@@ -114,6 +117,22 @@ export type ComcCommands = CommandDef<{
 		];
 
 		res: Uint8Array;
+	};
+
+	[XC_CMD_STORE_DATA]: {
+		req: [
+			s_data: string,
+		];
+
+		res: string;
+	};
+
+	[XC_CMD_FETCH_DATA]: {
+		req: [
+			s_key: string,
+		];
+
+		res: string;
 	};
 }>;
 

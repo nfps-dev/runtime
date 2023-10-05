@@ -147,6 +147,15 @@ export const boot = async(): Promise<void | BootInfo> => {
 		a_location = ['chain', 'contract', 'token']
 			.map(si_attr => nfp_attr(dm_self, si_attr)) as SlimTokenLocation;
 
+		// auth is baked into contract
+		const a_auth = nfp_tags('auth');
+		if(a_auth.length) {
+			if(!sh_vk) {
+				const sh_vk_baked = nfp_attr(a_auth[0]!, 'vk');
+				if(sh_vk_baked) sh_vk = sh_vk_baked;
+			}
+		}
+
 		// set busy state
 		xc_busy = 1;
 
