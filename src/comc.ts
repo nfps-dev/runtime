@@ -121,7 +121,7 @@ export type ComcCommands = CommandDef<{
 
 	[XC_CMD_STORE_DATA]: {
 		req: [
-			s_data: string,
+			w_data: JsonValue,
 		];
 
 		res: string;
@@ -132,7 +132,7 @@ export type ComcCommands = CommandDef<{
 			s_key: string,
 		];
 
-		res: string;
+		res: JsonValue;
 	};
 }>;
 
