@@ -1,10 +1,9 @@
+import type {Nilable} from '@blake.regalia/belt';
 import type {QueryPermit, SecretAccAddr} from '@solar-republic/contractor';
-
-import type {AuthSecret, HttpsUrl, WeakSecretAccAddr} from '@solar-republic/neutrino';
-
+import type {AuthSecret_ViewerInfo, HttpsUrl, WeakSecretAccAddr} from '@solar-republic/neutrino';
 
 import {
-	ofe, type Dict, type Nilable,
+	ofe,
 } from '@blake.regalia/belt';
 
 import {
@@ -13,8 +12,7 @@ import {
 
 import {load_script} from './connectivity';
 import {P_NS_NFP} from './constants';
-import {ls_read_json, ls_read} from './dom';
-import { XC_CMD_FETCH_DATA, comcClient, comcPortal } from './comc';
+import {ls_read_json, ls_write_json} from './dom';
 
 
 export type SlimTokenLocation = [
@@ -26,18 +24,14 @@ export type SlimTokenLocation = [
 export type BootInfo = [
 	a_location: SlimTokenLocation,
 	p_lcd: HttpsUrl,
-	g_permit: QueryPermit,
-	s_vk: string,
 	k_contract: SecretContract,
-	z_auth: Nilable<AuthSecret>
+	z_auth: Nilable<AuthSecret_ViewerInfo | QueryPermit>,
 ];
 
 let k_contract: SecretContract;
 let a_location: SlimTokenLocation;
-let si_storage_permit: string;
-let si_storage_vk: string;
-let g_permit: QueryPermit;
-let sh_vk: string;
+let z_auth!: Nilable<QueryPermit | AuthSecret_ViewerInfo>;
+let si_storage_auth: string;
 let xc_busy: 0 | 1 = 0;
 
 export const nfp_tags = (si_tag: string) => document.getElementsByTagNameNS(P_NS_NFP, si_tag);
@@ -59,11 +53,11 @@ const import_query_key_prompt = (): QueryPermit | string | void => {
 
 		// parsed as JSON object; use as permit
 		if('object' === typeof h_input) {
-			g_permit = h_input;
+			z_auth = h_input;
 		}
 		// treat text as viewing key
 		else {
-			sh_vk = sx_import;
+			z_auth = [sx_import];
 		}
 	}
 };
@@ -81,13 +75,11 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 			ofe(new URLSearchParams(sx_params || '').entries()),
 			k_contract,
 			a_location,
-			g_permit || sh_vk
+			z_auth!
 		);
 
-		// permit or vk worked, save it to local storage
-		localStorage.setItem(...(g_permit
-			? [si_storage_permit, JSON.stringify(g_permit)]
-			: [si_storage_vk, sh_vk]) as [string, string]);
+		// auth worked, save it to local storage
+		ls_write_json(si_storage_auth, z_auth);
 
 		// replace script
 		if(dm_script) {
@@ -105,22 +97,17 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 
 
 const resolve_permit = async(): Promise<void | 1> => {
-	// id of storage items
-	const s_location = a_location.join(':');
-	si_storage_permit = 'qp:'+s_location;
-	si_storage_vk = 'vk:'+s_location;
+	// storage item key
+	si_storage_auth = 'auth:'+a_location.join(':');
 
-	// check local storage for permit
-	g_permit = ls_read_json(si_storage_permit)!;
-
-	// check local storage for viewing key
-	sh_vk = sh_vk || ls_read(si_storage_vk)!;
+	// check local storage for auth
+	z_auth = ls_read_json(si_storage_auth);
 
 	// use prompt as fallback
-	if(!g_permit && !sh_vk) import_query_key_prompt()!;
+	if(!z_auth) import_query_key_prompt();
 
 	// something was loaded, hydrate; query succeeded
-	if(g_permit || sh_vk) {
+	if(z_auth) {
 		return await hydrate_nfp();
 	}
 };
@@ -149,15 +136,12 @@ export const boot = async(): Promise<void | BootInfo> => {
 		a_location = ['chain', 'contract', 'token']
 			.map(si_attr => nfp_attr(dm_self, si_attr)) as SlimTokenLocation;
 
-		let z_auth: Nilable<AuthSecret> = null;
-
 		// auth is baked into contract
 		const dm_auth = nfp_tags('auth')[0];
-		if(dm_auth) {
-			if(!sh_vk) {
-				const sh_vk_baked = nfp_attr(dm_auth, 'vk');
-				if(sh_vk_baked) sh_vk = sh_vk_baked;
+		if(dm_auth && !z_auth) {
+			const sh_vk = nfp_attr(dm_auth, 'vk');
 
+			if(sh_vk) {
 				z_auth = [sh_vk, nfp_attr(dm_auth, 'addr') as WeakSecretAccAddr];
 			}
 		}
@@ -199,8 +183,6 @@ export const boot = async(): Promise<void | BootInfo> => {
 					return [
 						a_location,
 						k_contract.lcd,
-						g_permit,
-						sh_vk,
 						k_contract,
 						z_auth,
 					];
