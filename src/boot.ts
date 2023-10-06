@@ -1,6 +1,6 @@
 import type {QueryPermit, SecretAccAddr} from '@solar-republic/contractor';
 
-import type {AuthSecret, HttpsUrl} from '@solar-republic/neutrino';
+import type {AuthSecret, HttpsUrl, WeakSecretAccAddr} from '@solar-republic/neutrino';
 
 
 import {
@@ -149,30 +149,37 @@ export const boot = async(): Promise<void | BootInfo> => {
 		a_location = ['chain', 'contract', 'token']
 			.map(si_attr => nfp_attr(dm_self, si_attr)) as SlimTokenLocation;
 
-		// // auth is baked into contract
-		// const a_auth = nfp_tags('auth');
-		// if(a_auth.length) {
-		// 	if(!sh_vk) {
-		// 		const sh_vk_baked = nfp_attr(a_auth[0]!, 'vk');
-		// 		if(sh_vk_baked) sh_vk = sh_vk_baked;
-		// 	}
-		// }
-
 		let z_auth: Nilable<AuthSecret> = null;
-		for(const dm_secret of nfp_tags('secret')) {
-			const p_comc = nfp_attr(dm_secret, 'comc');
-			const sh_key = nfp_attr(dm_secret, 'key');
-			if(!p_comc || !sh_key) continue;
 
-			const dm_portal = await comcPortal(p_comc as HttpsUrl, document.documentElement);
-			const k_comc = await comcClient(dm_portal);
+		// auth is baked into contract
+		const dm_auth = nfp_tags('auth')[0];
+		if(dm_auth) {
+			if(!sh_vk) {
+				const sh_vk_baked = nfp_attr(dm_auth, 'vk');
+				if(sh_vk_baked) sh_vk = sh_vk_baked;
 
-			await ({
-				async auth() {
-					z_auth = await k_comc.post(XC_CMD_FETCH_DATA, [sh_key]) as AuthSecret;
-				},
-			} as Dict<() => Promise<void>>)[nfp_attr(dm_secret, 'context')+'']?.();
+				z_auth = [sh_vk, nfp_attr(dm_auth, 'addr') as WeakSecretAccAddr];
+			}
 		}
+
+		// // secret via localStorage
+		// for(const dm_secret of nfp_tags('secret')) {
+		// 	const p_comc = nfp_attr(dm_secret, 'comc');
+		// 	const sh_key = nfp_attr(dm_secret, 'key');
+		// 	if(!p_comc || !sh_key) continue;
+
+		// 	const dm_portal = await comcPortal(p_comc as HttpsUrl, document.documentElement);
+		// 	const k_comc = await comcClient(dm_portal);
+
+		// 	await ({
+		// 		async auth() {
+		// 			z_auth = await k_comc.post(XC_CMD_FETCH_DATA, [sh_key]) as AuthSecret;
+		// 		},
+		// 	} as Dict<() => Promise<void>>)[nfp_attr(dm_secret, 'context')+'']?.();
+
+		// 	// discard portal
+		// 	dm_portal.remove();
+		// }
 
 		// set busy state
 		xc_busy = 1;
