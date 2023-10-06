@@ -21,7 +21,10 @@ export type SlimTokenLocation = [
 	si_token: string,
 ];
 
+type InjectScripts = () => void;
+
 export type BootInfo = [
+	f_inject: InjectScripts,
 	a_location: SlimTokenLocation,
 	p_lcd: HttpsUrl,
 	k_contract: SecretContract,
@@ -64,10 +67,12 @@ const import_query_key_prompt = (): QueryPermit | string | void => {
 
 
 
-const hydrate_nfp = async(): Promise<void | 1> => {
+const hydrate_nfp = async(): Promise<void | InjectScripts> => {
 	// find scripts
 	const a_srcs = Array.from(nfp_tags('script'))
 		.map(dm => [dm, nfp_attr(dm, 'src')?.split('?')]) as [Element, [string, string?]][];
+
+	const a_load: (() => void)[] = [];
 
 	for(const [dm_element, [si_package, sx_params]] of a_srcs) {
 		const dm_script = await load_script(
@@ -83,7 +88,7 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 
 		// replace script
 		if(dm_script) {
-			dm_element.replaceWith(dm_script);
+			a_load.push(() => dm_element.replaceWith(dm_script));
 		}
 		// fail
 		else {
@@ -91,12 +96,12 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 		}
 	}
 
-	return 1;
+	return () => a_load.map(f => f());
 };
 
 
 
-const resolve_permit = async(): Promise<void | 1> => {
+const resolve_permit = async(): Promise<void | InjectScripts> => {
 	// storage item key
 	si_storage_auth = a_location.join(':')+':auth';
 
@@ -178,9 +183,12 @@ export const boot = async(): Promise<void | BootInfo> => {
 				xc_busy = 0;
 
 				// done
-				if(await resolve_permit()) {
+				let f_inject!: InjectScripts | void;
+				// eslint-disable-next-line @typescript-eslint/no-extra-parens
+				if((f_inject=await resolve_permit())) {
 					// return boot info
 					return [
+						f_inject,
 						a_location,
 						k_contract.lcd,
 						k_contract,
