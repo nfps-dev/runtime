@@ -98,10 +98,10 @@ const hydrate_nfp = async(): Promise<void | 1> => {
 
 const resolve_permit = async(): Promise<void | 1> => {
 	// storage item key
-	si_storage_auth = 'auth:'+a_location.join(':');
+	si_storage_auth = a_location.join(':')+':auth';
 
 	// check local storage for auth
-	z_auth = ls_read_json(si_storage_auth);
+	z_auth ||= ls_read_json(si_storage_auth);
 
 	// use prompt as fallback
 	if(!z_auth) import_query_key_prompt();
