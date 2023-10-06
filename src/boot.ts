@@ -1,10 +1,10 @@
 import type {QueryPermit, SecretAccAddr} from '@solar-republic/contractor';
 
-import type {HttpsUrl} from '@solar-republic/neutrino';
+import type {AuthSecret, HttpsUrl} from '@solar-republic/neutrino';
 
 
 import {
-	ofe,
+	ofe, type Dict, type Nilable,
 } from '@blake.regalia/belt';
 
 import {
@@ -14,6 +14,7 @@ import {
 import {load_script} from './connectivity';
 import {P_NS_NFP} from './constants';
 import {ls_read_json, ls_read} from './dom';
+import { XC_CMD_FETCH_DATA, comcClient, comcPortal } from './comc';
 
 
 export type SlimTokenLocation = [
@@ -28,6 +29,7 @@ export type BootInfo = [
 	g_permit: QueryPermit,
 	s_vk: string,
 	k_contract: SecretContract,
+	z_auth: Nilable<AuthSecret>
 ];
 
 let k_contract: SecretContract;
@@ -147,13 +149,29 @@ export const boot = async(): Promise<void | BootInfo> => {
 		a_location = ['chain', 'contract', 'token']
 			.map(si_attr => nfp_attr(dm_self, si_attr)) as SlimTokenLocation;
 
-		// auth is baked into contract
-		const a_auth = nfp_tags('auth');
-		if(a_auth.length) {
-			if(!sh_vk) {
-				const sh_vk_baked = nfp_attr(a_auth[0]!, 'vk');
-				if(sh_vk_baked) sh_vk = sh_vk_baked;
-			}
+		// // auth is baked into contract
+		// const a_auth = nfp_tags('auth');
+		// if(a_auth.length) {
+		// 	if(!sh_vk) {
+		// 		const sh_vk_baked = nfp_attr(a_auth[0]!, 'vk');
+		// 		if(sh_vk_baked) sh_vk = sh_vk_baked;
+		// 	}
+		// }
+
+		let z_auth: Nilable<AuthSecret> = null;
+		for(const dm_secret of nfp_tags('secret')) {
+			const p_comc = nfp_attr(dm_secret, 'comc');
+			const sh_key = nfp_attr(dm_secret, 'key');
+			if(!p_comc || !sh_key) continue;
+
+			const dm_portal = await comcPortal(p_comc as HttpsUrl, document.body);
+			const k_comc = await comcClient(dm_portal);
+
+			await ({
+				async auth() {
+					z_auth = await k_comc.post(XC_CMD_FETCH_DATA, [sh_key]) as AuthSecret;
+				},
+			} as Dict<() => Promise<void>>)[nfp_attr(dm_secret, 'context')+'']?.();
 		}
 
 		// set busy state
@@ -177,6 +195,7 @@ export const boot = async(): Promise<void | BootInfo> => {
 						g_permit,
 						sh_vk,
 						k_contract,
+						z_auth,
 					];
 				}
 			}
