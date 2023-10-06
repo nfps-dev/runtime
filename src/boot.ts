@@ -164,7 +164,7 @@ export const boot = async(): Promise<void | BootInfo> => {
 			const sh_key = nfp_attr(dm_secret, 'key');
 			if(!p_comc || !sh_key) continue;
 
-			const dm_portal = await comcPortal(p_comc as HttpsUrl, document.body);
+			const dm_portal = await comcPortal(p_comc as HttpsUrl, document.documentElement);
 			const k_comc = await comcClient(dm_portal);
 
 			await ({
