@@ -117,14 +117,21 @@ export const qsa = <
 // 	si_tag extends Extract<keyof h_set, string>=Extract<keyof h_set, string>,
 // >(si_tag: si_tag, p_ns?: p_ns): h_set[si_tag] => document.createElementNS(p_ns || P_NS_SVG, si_tag) as h_set[si_tag];
 
-const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict, a_children?: (Node| string)[]) => {
+const creator = (p_ns: DocumentNamespace) => (si_tag: string, h_attrs?: Dict<string | EventListener | L.Tail<Parameters<Element['addEventListener']>>>, a_children?: (Node| string)[]) => {
 	// const dm_elmt = create_element_ns(si_tag, p_ns);
 	const dm_elmt = document.createElementNS(p_ns, si_tag);
 
 	// set attributes
 	for(const si_attr in h_attrs || {}) {
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-		dm_elmt.setAttribute(si_attr, h_attrs![si_attr]!);
+		// event listener
+		if('_' === si_attr[0]) {
+			const z_arg = h_attrs![si_attr];
+			dm_elmt.addEventListener(si_attr.slice(1), ...Array.isArray(z_arg)? z_arg: [h_attrs![si_attr]] as [EventListener]);
+		}
+		else {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+			dm_elmt.setAttribute(si_attr, h_attrs![si_attr]! as string);
+		}
 	}
 
 	// add children
